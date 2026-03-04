@@ -1,0 +1,54 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------< com.trainbooking:TrainBookingSystem >-----------------
+[INFO] Building Distributed Train Ticket Booking System 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] 2 problems were encountered while building the effective model for org.apache.yetus:audience-annotations:jar:0.5.0 during dependency collection step for project (use -X to see details)
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ TrainBookingSystem ---
+[INFO] Deleting D:\MATERIALS\DS\TrainBookingSystem\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ TrainBookingSystem ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ TrainBookingSystem ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 11 source files with javac [debug target 11] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] /D:/MATERIALS/DS/TrainBookingSystem/src/main/java/com/trainbooking/setup/ClusterSetup.java: Some input files use or override a deprecated API.
+[INFO] /D:/MATERIALS/DS/TrainBookingSystem/src/main/java/com/trainbooking/setup/ClusterSetup.java: Recompile with -Xlint:deprecation for details.
+[INFO] -------------------------------------------------------------
+[WARNING] COMPILATION WARNING : 
+[INFO] -------------------------------------------------------------
+[WARNING] system modules path not set in conjunction with -source 11
+[INFO] 1 warning
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /D:/MATERIALS/DS/TrainBookingSystem/src/main/java/com/trainbooking/controller/HelixControllerMain.java:[7,1] com.trainbooking.controller.HelixControllerMain is already defined in this compilation unit
+[INFO] 1 error
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  4.353 s
+[INFO] Finished at: 2026-03-04T19:26:55+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile (default-compile) on project TrainBookingSystem: Compilation failure
+[ERROR] /D:/MATERIALS/DS/TrainBookingSystem/src/main/java/com/trainbooking/controller/HelixControllerMain.java:[7,1] com.trainbooking.controller.HelixControllerMain is already defined in this compilation unit
+[ERROR] 
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

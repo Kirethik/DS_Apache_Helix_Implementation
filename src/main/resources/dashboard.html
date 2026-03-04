@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Train Booking — Helix Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg-base:    #080c14;
+    --bg-card:    #0d1425;
+    --bg-card2:   #111827;
+    --border:     #1e293b;
+    --border2:    #243044;
+    --accent:     #3b82f6;
+    --accent2:    #6366f1;
+    --green:      #22c55e;
+    --yellow:     #f59e0b;
+    --red:        #ef4444;
+    --purple:     #a855f7;
+    --cyan:       #06b6d4;
+    --text:       #e2e8f0;
+    --text2:      #94a3b8;
+    --text3:      #64748b;
+    --master-clr: #f59e0b;
+    --slave-clr:  #3b82f6;
+    --offline-clr:#ef4444;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-base);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background animated mesh */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 20%, rgba(59,130,246,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(99,102,241,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ── HEADER ──────────────────────────────────────────────── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(8, 12, 20, 0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 20px rgba(59,130,246,0.4);
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+  @keyframes pulse-glow {
+    0%,100% { box-shadow: 0 0 20px rgba(59,130,246,0.4); }
+    50%      { box-shadow: 0 0 35px rgba(99,102,241,0.6); }
+  }
+  .logo-text h1 { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+  .logo-text p  { font-size: 11px; color: var(--text3); font-weight: 400; }
+
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .status-badge {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    border: 1px solid;
+  }
+  .status-badge.live  { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3); color: var(--green); }
+  .status-badge.sim   { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); color: var(--yellow); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: blink 1.5s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .btn-reset {
+    padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border2);
+    background: transparent; color: var(--text2); font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-reset:hover { background: rgba(239,68,68,0.1); border-color: var(--red); color: var(--red); }
+
+  /* ── MAIN GRID ───────────────────────────────────────────── */
+  .main-grid {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: 320px 1fr 280px;
+    grid-template-rows: auto auto;
+    gap: 20px;
+    padding: 24px 28px;
+    max-width: 1600px; margin: 0 auto;
+  }
+
+  /* ── CARDS ───────────────────────────────────────────────── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .card:hover { border-color: var(--border2); }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: var(--text);
+  }
+  .card-title .icon { font-size: 16px; }
+  .card-badge {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+    background: rgba(59,130,246,0.15); color: var(--accent); border: 1px solid rgba(59,130,246,0.2);
+  }
+  .card-body { padding: 16px 20px; }
+
+  /* ── CLUSTER TOPOLOGY PANEL ──────────────────────────────── */
+  #cluster-panel { grid-column: 1; grid-row: 1 / 3; }
+
+  .node-card {
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    transition: all 0.3s;
+  }
+  .node-card.online  { border-color: rgba(59,130,246,0.3); }
+  .node-card.offline { border-color: rgba(239,68,68,0.4); opacity: 0.6; }
+  .node-card.master-node { border-color: rgba(245,158,11,0.4); }
+
+  .node-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .node-name {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 700;
+  }
+  .node-indicator {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .node-indicator.online  { background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 2s infinite; }
+  .node-indicator.offline { background: var(--red); }
+  .node-tag {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 8px;
+  }
+  .node-tag.online  { background: rgba(34,197,94,0.15); color: var(--green); }
+  .node-tag.offline { background: rgba(239,68,68,0.15); color: var(--red); }
+
+  .partition-rows { display: flex; flex-direction: column; gap: 5px; }
+  .partition-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 10px; border-radius: 7px;
+    font-size: 11px;
+  }
+  .partition-row .p-name { font-family: 'JetBrains Mono', monospace; color: var(--text2); }
+  .role-badge {
+    font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.5px;
+  }
+  .role-badge.MASTER  { background: rgba(245,158,11,0.2); color: var(--master-clr); border: 1px solid rgba(245,158,11,0.3); }
+  .role-badge.SLAVE   { background: rgba(59,130,246,0.15); color: var(--slave-clr); border: 1px solid rgba(59,130,246,0.2); }
+  .role-badge.OFFLINE { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+
+  .fail-btn {
+    width: 100%; margin-top: 10px;
+    padding: 6px; border-radius: 8px;
+    border: 1px solid rgba(239,68,68,0.3);
+    background: rgba(239,68,68,0.07);
+    color: var(--red); font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .fail-btn:hover { background: rgba(239,68,68,0.15); }
+  .fail-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── BOOKING PANEL ───────────────────────────────────────── */
+  #booking-panel { grid-column: 2; grid-row: 1; }
+
+  .train-tabs {
+    display: flex; gap: 8px; margin-bottom: 16px;
+    background: var(--bg-card2); border-radius: 10px; padding: 4px;
+    border: 1px solid var(--border);
+  }
+  .train-tab {
+    flex: 1; padding: 7px; border-radius: 7px;
+    background: transparent; border: none;
+    color: var(--text3); font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .train-tab.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+  }
+
+  /* Booking form */
+  .booking-form {
+    display: grid; grid-template-columns: 1fr 1fr 1fr auto auto;
+    gap: 10px; align-items: end; margin-bottom: 16px;
+  }
+  .form-group label {
+    display: block; font-size: 10px; font-weight: 600; color: var(--text3);
+    margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .form-group input, .form-group select {
+    width: 100%; padding: 8px 12px; border-radius: 8px;
+    background: var(--bg-card2); border: 1px solid var(--border2);
+    color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif;
+    outline: none; transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+  .form-group select option { background: var(--bg-card2); }
+
+  .btn-action {
+    padding: 8px 16px; border-radius: 8px; border: none;
+    font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-reserve { background: linear-gradient(135deg,#3b82f6,#6366f1); color: white; }
+  .btn-reserve:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(59,130,246,0.4); }
+  .btn-confirm { background: linear-gradient(135deg,#22c55e,#16a34a); color: white; }
+  .btn-confirm:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(34,197,94,0.4); }
+  .btn-expire { background: linear-gradient(135deg,#f59e0b,#d97706); color: white; }
+  .btn-expire:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(245,158,11,0.4); }
+  .btn-cancel2 { background: linear-gradient(135deg,#ef4444,#dc2626); color: white; }
+  .btn-cancel2:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(239,68,68,0.4); }
+
+  /* Seat grid */
+  .seat-grid-wrapper { overflow-y: auto; max-height: 340px; }
+  .seat-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+  }
+  .seat {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    border: 1.5px solid;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'JetBrains Mono', monospace;
+    user-select: none;
+  }
+  .seat.AVAILABLE { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.3); color: var(--green); }
+  .seat.AVAILABLE:hover { background: rgba(34,197,94,0.2); transform: scale(1.1); }
+  .seat.RESERVED  { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.5); color: var(--yellow); }
+  .seat.RESERVED:hover { background: rgba(245,158,11,0.25); transform: scale(1.1); }
+  .seat.CONFIRMED { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.5); color: var(--accent); }
+  .seat.CANCELLED { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.3); color: var(--red); }
+  .seat.selected  { outline: 2px solid white; transform: scale(1.15); }
+
+  .seat-legend {
+    display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text3); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* ── METRICS PANEL ───────────────────────────────────────── */
+  #metrics-panel { grid-column: 3; grid-row: 1; }
+
+  .metric-block {
+    background: var(--bg-card2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+  }
+  .metric-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .metric-value { font-size: 28px; font-weight: 800; font-family: 'JetBrains Mono', monospace; line-height: 1; }
+  .metric-value.blue   { color: var(--accent); }
+  .metric-value.green  { color: var(--green); }
+  .metric-value.yellow { color: var(--yellow); }
+  .metric-value.purple { color: var(--purple); }
+  .metric-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  .zk-compare {
+    background: var(--bg-card2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+  }
+  .zk-compare-title { font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 12px; }
+  .zk-bar-row { margin-bottom: 10px; }
+  .zk-bar-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 11px; }
+  .zk-bar-label span:first-child { color: var(--text3); }
+  .zk-bar-label span:last-child  { font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .zk-bar-track {
+    height: 8px; border-radius: 4px;
+    background: rgba(255,255,255,0.05);
+    overflow: hidden;
+  }
+  .zk-bar-fill {
+    height: 100%; border-radius: 4px; transition: width 0.6s ease;
+  }
+  .zk-bar-fill.red    { background: linear-gradient(90deg, #ef4444, #dc2626); }
+  .zk-bar-fill.green  { background: linear-gradient(90deg, #22c55e, #16a34a); }
+
+  .reduction-badge {
+    text-align: center; padding: 8px;
+    background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 8px; margin-top: 8px;
+    font-size: 15px; font-weight: 800; color: var(--green);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .reduction-badge small { font-size: 10px; font-weight: 400; display: block; color: var(--text3); margin-top: 2px; }
+
+  /* Seat stats mini grid */
+  .seat-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+  .seat-stat { background: var(--bg-card2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; text-align: center; }
+  .seat-stat .s-val { font-size: 22px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .seat-stat .s-lbl { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+  /* ── EVENT LOG ───────────────────────────────────────────── */
+  #event-panel { grid-column: 2 / 4; grid-row: 2; }
+
+  .event-log {
+    height: 200px; overflow-y: auto;
+    display: flex; flex-direction: column-reverse;
+    gap: 4px;
+  }
+  .event-log::-webkit-scrollbar { width: 4px; }
+  .event-log::-webkit-scrollbar-track { background: transparent; }
+  .event-log::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .event-entry {
+    padding: 6px 12px; border-radius: 6px; font-size: 12px;
+    background: var(--bg-card2); border-left: 3px solid;
+    animation: slideIn 0.3s ease;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text2);
+  }
+  @keyframes slideIn { from { opacity:0; transform: translateX(-10px); } to { opacity:1; transform: none; } }
+  .event-entry.success { border-color: var(--green); }
+  .event-entry.error   { border-color: var(--red); }
+  .event-entry.warn    { border-color: var(--yellow); }
+  .event-entry.info    { border-color: var(--accent); }
+
+  /* ── TOAST ───────────────────────────────────────────────── */
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600;
+    z-index: 999; opacity: 0; transition: opacity 0.3s;
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; }
+  #toast.ok  { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.4); color: var(--green); }
+  #toast.err { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: var(--red); }
+
+  /* ── RESPONSIVE ──────────────────────────────────────────── */
+  @media (max-width: 1200px) {
+    .main-grid { grid-template-columns: 280px 1fr; }
+    #metrics-panel { grid-column: 1 / 3; grid-row: 3; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    #event-panel   { grid-column: 1 / 3; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🚄</div>
+    <div class="logo-text">
+      <h1>Train Booking — Helix Dashboard</h1>
+      <p>Distributed Cluster Coordination · Apache Helix + ZooKeeper</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div id="zk-badge" class="status-badge sim"><span class="dot"></span> <span id="zk-mode-text">Connecting...</span></div>
+    <button class="btn-reset" onclick="resetCluster()">↺ Reset Cluster</button>
+  </div>
+</header>
+
+<div class="main-grid">
+
+  <!-- ── LEFT: CLUSTER TOPOLOGY ─────────────────────────────── -->
+  <div class="card" id="cluster-panel">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">🔗</span> Cluster Topology</div>
+      <span class="card-badge">TrainCluster</span>
+    </div>
+    <div class="card-body" id="cluster-body">
+      <div style="color:var(--text3);text-align:center;padding:20px;font-size:12px;">Loading cluster state...</div>
+    </div>
+  </div>
+
+  <!-- ── CENTER: BOOKING PANEL ──────────────────────────────── -->
+  <div class="card" id="booking-panel">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">🎫</span> Seat Booking</div>
+      <span id="master-info" style="font-size:11px;color:var(--text3);">Select a train</span>
+    </div>
+    <div class="card-body">
+
+      <!-- Train tabs -->
+      <div class="train-tabs">
+        <button class="train-tab active" id="tab-Train_101" onclick="selectTrain('Train_101')">Train 101</button>
+        <button class="train-tab" id="tab-Train_202" onclick="selectTrain('Train_202')">Train 202</button>
+        <button class="train-tab" id="tab-Train_303" onclick="selectTrain('Train_303')">Train 303</button>
+        <button class="train-tab" id="tab-Train_404" onclick="selectTrain('Train_404')">Train 404</button>
+      </div>
+
+      <!-- Booking form -->
+      <div class="booking-form">
+        <div class="form-group">
+          <label>Seat #</label>
+          <input type="number" id="seat-num" min="1" max="30" value="1" oninput="selectSeatByInput()"/>
+        </div>
+        <div class="form-group" style="grid-column: span 2;">
+          <label>Passenger Name</label>
+          <input type="text" id="passenger-name" value="Alice" placeholder="Enter passenger name"/>
+        </div>
+        <button class="btn-action btn-reserve" onclick="doAction('reserve')" title="AVAILABLE → RESERVED">Reserve</button>
+        <button class="btn-action btn-confirm" onclick="doAction('confirm')" title="RESERVED → CONFIRMED">Confirm</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button class="btn-action btn-expire"  style="font-size:11px;padding:6px 12px;" onclick="doAction('expire')"  title="RESERVED → EXPIRED">⏰ Expire Reservation</button>
+        <button class="btn-action btn-cancel2" style="font-size:11px;padding:6px 12px;" onclick="doAction('cancel')"  title="CONFIRMED → CANCELLED">✖ Cancel Booking</button>
+      </div>
+
+      <!-- Seat map -->
+      <div class="seat-grid-wrapper">
+        <div class="seat-grid" id="seat-grid">
+          <!-- seats rendered by JS -->
+        </div>
+      </div>
+      <div class="seat-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(34,197,94,0.5)"></div> Available</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(245,158,11,0.5)"></div> Reserved</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(59,130,246,0.5)"></div> Confirmed</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(239,68,68,0.4)"></div> Cancelled</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT: METRICS PANEL ──────────────────────────────── -->
+  <div class="card" id="metrics-panel">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">📊</span> Metrics</div>
+    </div>
+    <div class="card-body">
+
+      <!-- Seat stats -->
+      <div class="seat-stats">
+        <div class="seat-stat">
+          <div class="s-val" id="m-available" style="color:var(--green)">-</div>
+          <div class="s-lbl">Available</div>
+        </div>
+        <div class="seat-stat">
+          <div class="s-val" id="m-reserved" style="color:var(--yellow)">-</div>
+          <div class="s-lbl">Reserved</div>
+        </div>
+        <div class="seat-stat">
+          <div class="s-val" id="m-confirmed" style="color:var(--accent)">-</div>
+          <div class="s-lbl">Confirmed</div>
+        </div>
+        <div class="seat-stat">
+          <div class="s-val" id="m-cancelled" style="color:var(--red)">-</div>
+          <div class="s-lbl">Cancelled</div>
+        </div>
+      </div>
+
+      <!-- ZK Write Comparison -->
+      <div class="zk-compare">
+        <div class="zk-compare-title">⚡ ZooKeeper Write Comparison</div>
+        <div class="zk-bar-row">
+          <div class="zk-bar-label">
+            <span>Without Batching</span>
+            <span id="zk-no-batch">0</span>
+          </div>
+          <div class="zk-bar-track">
+            <div class="zk-bar-fill red" id="bar-no-batch" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="zk-bar-row">
+          <div class="zk-bar-label">
+            <span>With Batching (÷10)</span>
+            <span id="zk-batch">0</span>
+          </div>
+          <div class="zk-bar-track">
+            <div class="zk-bar-fill green" id="bar-batch" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="reduction-badge" id="reduction-badge">
+          <span id="reduction-pct">—</span>
+          <small>ZK write reduction via batching</small>
+        </div>
+      </div>
+
+      <!-- Total events -->
+      <div class="metric-block">
+        <div class="metric-label">Total Booking Events</div>
+        <div class="metric-value blue" id="m-total">0</div>
+        <div class="metric-sub">across all partitions</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── BOTTOM: EVENT LOG ──────────────────────────────────── -->
+  <div class="card" id="event-panel">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">📋</span> Live Event Log</div>
+      <span id="event-count" class="card-badge">0 events</span>
+    </div>
+    <div class="card-body" style="padding:12px 16px;">
+      <div class="event-log" id="event-log">
+        <div class="event-entry info">[system] Dashboard loaded — waiting for events...</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main-grid -->
+
+<div id="toast"></div>
+
+<script>
+  // ── State ───────────────────────────────────────────────────
+  let currentTrain = 'Train_101';
+  let selectedSeat = 1;
+  let seatsData = [];
+  let clusterData = {};
+  let metricsData = {};
+
+  // ── Init ────────────────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', () => {
+    selectTrain('Train_101');
+    setInterval(refreshAll, 2500);
+    refreshAll();
+  });
+
+  async function refreshAll() {
+    await Promise.all([refreshCluster(), refreshSeats(), refreshMetrics(), refreshEvents()]);
+  }
+
+  // ── Cluster ─────────────────────────────────────────────────
+  async function refreshCluster() {
+    try {
+      const d = await fetchJson('/api/cluster');
+      clusterData = d;
+      renderCluster(d);
+    } catch(e) {}
+  }
+
+  function renderCluster(d) {
+    const nodes = ['Node1','Node2','Node3'];
+    const partitions = Object.keys(d.partitions || {});
+    let html = '';
+
+    nodes.forEach(node => {
+      const isOnline = d.nodes[node] === 'ONLINE';
+      const isMasterOfAny = partitions.some(p => d.partitions[p][node] === 'MASTER');
+
+      html += `<div class="node-card ${isOnline ? (isMasterOfAny?'master-node':'online') : 'offline'}">
+        <div class="node-header">
+          <div class="node-name">
+            <span class="node-indicator ${isOnline?'online':'offline'}"></span>
+            <span>${node}</span>
+          </div>
+          <span class="node-tag ${isOnline?'online':'offline'}">${isOnline?'● ONLINE':'✕ OFFLINE'}</span>
+        </div>
+        <div class="partition-rows">`;
+
+      partitions.forEach(p => {
+        const role = d.partitions[p][node] || 'SLAVE';
+        const short = p.replace('Train_','T');
+        html += `<div class="partition-row">
+          <span class="p-name">${short}</span>
+          <span class="role-badge ${role}">${role}</span>
+        </div>`;
+      });
+
+      html += `</div>`;
+      if (isOnline) {
+        html += `<button class="fail-btn" onclick="failNode('${node}')">⚡ Simulate ${node} Failure</button>`;
+      } else {
+        html += `<button class="fail-btn" disabled>✕ ${node} OFFLINE</button>`;
+      }
+      html += `</div>`;
+    });
+
+    document.getElementById('cluster-body').innerHTML = html;
+
+    // Update ZK mode badge
+    const badge = document.getElementById('zk-badge');
+    const isLive = (d.nodes && Object.keys(d.nodes).length > 0);
+    badge.className = 'status-badge sim';
+    document.getElementById('zk-mode-text').textContent = 'Simulation Mode';
+  }
+
+  // ── Seats ───────────────────────────────────────────────────
+  async function refreshSeats() {
+    try {
+      const d = await fetchJson(`/api/seats?trainId=${currentTrain}`);
+      seatsData = d.seats;
+      renderSeats(d.seats);
+      updateMasterInfo();
+    } catch(e) {}
+  }
+
+  function renderSeats(seats) {
+    const grid = document.getElementById('seat-grid');
+    grid.innerHTML = seats.map(s => {
+      const isSelected = s.num === selectedSeat;
+      return `<div class="seat ${s.status}${isSelected?' selected':''}"
+               title="Seat ${s.num}${s.passenger?': '+s.passenger:''}"
+               onclick="clickSeat(${s.num})">${s.num}</div>`;
+    }).join('');
+  }
+
+  function updateMasterInfo() {
+    if (!clusterData.partitions || !clusterData.partitions[currentTrain]) return;
+    const stateMap = clusterData.partitions[currentTrain];
+    const master = Object.keys(stateMap).find(n => stateMap[n] === 'MASTER') || 'Unknown';
+    document.getElementById('master-info').textContent = `MASTER: ${master}`;
+  }
+
+  function clickSeat(num) {
+    selectedSeat = num;
+    document.getElementById('seat-num').value = num;
+    renderSeats(seatsData);
+  }
+
+  function selectSeatByInput() {
+    selectedSeat = parseInt(document.getElementById('seat-num').value) || 1;
+    renderSeats(seatsData);
+  }
+
+  // ── Train tabs ──────────────────────────────────────────────
+  function selectTrain(trainId) {
+    currentTrain = trainId;
+    document.querySelectorAll('.train-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-'+trainId).classList.add('active');
+    refreshSeats();
+  }
+
+  // ── Booking actions ─────────────────────────────────────────
+  async function doAction(action) {
+    const seatNum = parseInt(document.getElementById('seat-num').value);
+    const passenger = document.getElementById('passenger-name').value || 'Passenger';
+    if (!seatNum || seatNum < 1 || seatNum > 30) { showToast('Enter a valid seat number (1-30)', false); return; }
+
+    const endpoints = { reserve: '/api/reserve', confirm: '/api/confirm', expire: '/api/expire', cancel: '/api/cancel' };
+    const body = `trainId=${encodeURIComponent(currentTrain)}&seatNum=${seatNum}&passenger=${encodeURIComponent(passenger)}`;
+
+    try {
+      const r = await postJson(endpoints[action], body);
+      showToast(r.message, r.success);
+      await refreshSeats();
+      await refreshMetrics();
+    } catch(e) {
+      showToast('Request failed', false);
+    }
+  }
+
+  // ── Failover ────────────────────────────────────────────────
+  async function failNode(node) {
+    if (!confirm(`Simulate failure of ${node}?\n\nThis will trigger Helix leader election.`)) return;
+    try {
+      const r = await postJson('/api/failover', `node=${node}`);
+      showToast(r.message, r.success);
+      await refreshCluster();
+      await refreshEvents();
+    } catch(e) {}
+  }
+
+  // ── Reset ───────────────────────────────────────────────────
+  async function resetCluster() {
+    if (!confirm('Reset the entire cluster?\n\nAll nodes come back online and all bookings are cleared.')) return;
+    try {
+      await postJson('/api/reset', '');
+      showToast('Cluster reset — all nodes online', true);
+      await refreshAll();
+    } catch(e) {}
+  }
+
+  // ── Metrics ─────────────────────────────────────────────────
+  async function refreshMetrics() {
+    try {
+      const d = await fetchJson('/api/metrics');
+      metricsData = d;
+      document.getElementById('m-available').textContent = d.available;
+      document.getElementById('m-reserved').textContent  = d.reserved;
+      document.getElementById('m-confirmed').textContent = d.confirmed;
+      document.getElementById('m-cancelled').textContent = d.cancelled;
+      document.getElementById('m-total').textContent     = d.totalEvents;
+      document.getElementById('zk-no-batch').textContent = d.zkNoBatch;
+      document.getElementById('zk-batch').textContent    = d.zkBatch;
+
+      const maxW = Math.max(d.zkNoBatch, 1);
+      document.getElementById('bar-no-batch').style.width = (100) + '%';
+      document.getElementById('bar-batch').style.width    = (d.zkBatch / maxW * 100) + '%';
+      document.getElementById('reduction-badge').querySelector('#reduction-pct').textContent =
+          d.reduction.toFixed(0) + '% fewer ZK writes';
+    } catch(e) {}
+  }
+
+  // ── Events ──────────────────────────────────────────────────
+  async function refreshEvents() {
+    try {
+      const events = await fetchJson('/api/events');
+      const log = document.getElementById('event-log');
+      log.innerHTML = events.map(e => {
+        let cls = 'info';
+        if (e.includes('CONFIRMED') || e.includes('promoted') || e.includes('reset') || e.includes('started')) cls = 'success';
+        else if (e.includes('FAILED') || e.includes('failed') || e.includes('✖')) cls = 'error';
+        else if (e.includes('EXPIRED') || e.includes('failure') || e.includes('CANCEL')) cls = 'warn';
+        return `<div class="event-entry ${cls}">${e}</div>`;
+      }).reverse().join('');
+      document.getElementById('event-count').textContent = events.length + ' events';
+    } catch(e) {}
+  }
+
+  // ── Toast ────────────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg, ok) {
+    const t = document.getElementById('toast');
+    t.textContent = (ok ? '✔ ' : '✘ ') + msg;
+    t.className = 'show ' + (ok ? 'ok' : 'err');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.className = ''; }, 3000);
+  }
+
+  // ── HTTP helpers ─────────────────────────────────────────────
+  async function fetchJson(url) {
+    const r = await fetch(url);
+    return r.json();
+  }
+  async function postJson(url, body) {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body
+    });
+    return r.json();
+  }
+</script>
+</body>
+</html>
